@@ -7,7 +7,7 @@
 
 
 
-; Iterative process  
+; Iterative process
 (define (accumulate combiner null-value term a next b)
     (define (accumulate-iter combiner term a next b acc)
         (if (> a b)
