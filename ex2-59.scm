@@ -23,5 +23,6 @@
     (cond ((null? set1) set2)
           ((null? set2) set1)
           ((not (element-of-set? set2 (car set1))) (cons (car set1)
-                                                    (union-set (cdr set1) set2)))
+                                                         (union-set (cdr set1) set2)))
           (else (union-set (cdr set1) set2))))
+          
