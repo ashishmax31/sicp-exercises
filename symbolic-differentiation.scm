@@ -5,6 +5,10 @@
           ((variable? expression) (if (same-variable? expression var) 
                                       1 
                                       0))
+          ((exponentiation? expression) (make-product (make-product (exponent expression)
+                                                                    (make-exponentiation (base expression)
+                                                                                         (dec (exponent expression))))
+                                                      (derivative (base expression) var)))
           ((is-sum? expression) (make-sum (derivative (first-exp expression) var)
                                           (derivative (second-exp expression) var)))
           ((is-product? expression) (make-sum (make-product (first-exp expression)
@@ -47,3 +51,20 @@
 (define (=number? exp val)
     (and (number? exp) (equal? exp val)))
 
+
+(define (exponentiation? expression)
+    (and (pair? expression) (eq? (car expression) '**)))
+
+(define (exponent expression)
+    (cadr (cdr expression)))
+
+(define (base expression)
+    (cadr expression))
+
+(define (make-exponentiation b exp)
+    (cond ((zero? exp) 1)
+          ((equal? exp 1) b)
+          (else (list '** b exp))))
+
+(define (dec item)
+    (- item 1))
