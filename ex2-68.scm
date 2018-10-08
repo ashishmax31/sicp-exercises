@@ -1,4 +1,6 @@
-#lang scheme
+
+(define true #t)
+(define false #f)
 
 (define (encode message h-tree)
     (if (null? message)
@@ -77,5 +79,6 @@
 (define message '(A D A B B C A))
 
 
-(encode message sample-tree)
+(display (encode message sample-tree))
+(newline)
 ; (0 1 1 0 0 1 0 1 0 1 1 1 0)
