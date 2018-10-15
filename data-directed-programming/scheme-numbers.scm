@@ -7,6 +7,9 @@
     (put 'mul '(scheme-number scheme-number) (lambda (a b) (tag (* a b))))
     (put 'div '(scheme-number scheme-number) (lambda (a b) (tag (/ a b))))
     (put 'make 'scheme-number (lambda (num) (tag num)))
-
+    (put-coercion 'scheme-number 'complex (lambda (n) (make-from-real-imag (contents n)
+                                                                           0)))
+    (put-coercion 'rational 'scheme-number (lambda (rational-num) (tag (/ (car (contents rational-num))
+                                                                          (cdr (contents rational-num))))))
     (display "Installed scheme numbers...")
     (newline))

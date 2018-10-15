@@ -1,20 +1,20 @@
 (define (install-rational-numbers)
-    
+
     (define (tag contents) (attach-tag 'rational contents))
 
     (define (add-rat x y)
-        (make-rat (+ (* (numer x) 
-                        (denom y)) 
-                    (* (numer y) 
+        (make-rat (+ (* (numer x)
+                        (denom y))
+                    (* (numer y)
                         (denom x)))
                 (*
                     (denom x)
                     (denom y))))
 
     (define (sub-rat x y)
-        (make-rat (- (* (numer x) 
-                        (denom y)) 
-                    (* (numer y) 
+        (make-rat (- (* (numer x)
+                        (denom y))
+                    (* (numer y)
                         (denom x)))
                 (*
                     (denom x)
@@ -53,13 +53,16 @@
             a
             (gcd b (remainder a b))))
 
-    
+
     (put 'make-rat 'rational (lambda (x y) (make-rat x y)))
     (put 'add '(rational rational) add-rat)
     (put 'sub '(rational rational) sub-rat)
     (put 'mul '(rational rational) mul-rat)
     (put 'div '(rational rational) divide-rat)
 
+    (put-coercion 'rational 'complex (lambda (r) (make-from-real-imag (/ (car (contents r))
+                                                                         (cdr (contents r)))
+                                                                      0 )))
+
     (display "Installed rational numbers...")
     (newline))
-            

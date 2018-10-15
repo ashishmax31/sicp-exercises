@@ -1,5 +1,5 @@
 #lang racket/load
-
+(current-directory (build-path (current-directory) "SICP/data-directed-programming"))
 (load "utils.scm")
 (load "polar_representation.scm")
 (load "rectangular_representation.scm")
