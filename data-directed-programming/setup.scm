@@ -7,12 +7,14 @@
 (load "complex_numbers.scm")
 (load "rational_numbers.scm")
 (load "scheme-numbers.scm")
+(load "real-numbers.scm")
 
 (install-rectangular-complex-numbers)
 (install-polar-representation)
 (install-complex-numbers)
 (install-rational-numbers)
 (install-scheme-numbers)
+(install-real-numbers)
 
 (define z1 (make-from-real-imag 3 4))
 (define z2 (make-from-real-imag 3 -14))

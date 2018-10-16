@@ -34,6 +34,15 @@
                                                   (apply apply-generic op transformed-args))))))
                       (error "ActionDispatch error cant coerce types."))))))
 
+; (define (apply-generic op . args)
+;   (let ((type-tags (map get-tag args)))
+;     (let ((proc (get op type-tags)))
+;       (if proc
+;           (apply proc (map contents args))
+;           (error
+;             "No method for these types -- APPLY-GENERIC"
+;             (list op type-tags))))))
+
 (define *op-table* (make-hash))
 
 (define (put op type proc)

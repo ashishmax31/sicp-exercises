@@ -22,6 +22,12 @@
 (define (make-scheme-number n)
     ((get 'make 'scheme-number) n))
 
+(define (make-real-number n)
+    ((get 'make 'real-number) n))
+
+(define (raise item)
+    (apply-generic 'raise item))
+
 (define (add z1 z2)
     (apply-generic 'add z1 z2))
 
@@ -33,3 +39,6 @@
 
 (define (mul z1 z2)
     (apply-generic 'mul z1 z2))
+
+(define (addd z1 z2 z3)
+    (apply-generic 'add-3 z1 z2 z3))

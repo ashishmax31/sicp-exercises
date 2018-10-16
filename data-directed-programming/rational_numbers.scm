@@ -2,6 +2,9 @@
 
     (define (tag contents) (attach-tag 'rational contents))
 
+    (define (raise-to-real number)
+            (make-real-number (/ (numer number)
+                                 (denom number))))
     (define (add-rat x y)
         (make-rat (+ (* (numer x)
                         (denom y))
@@ -63,6 +66,6 @@
     (put-coercion 'rational 'complex (lambda (r) (make-from-real-imag (/ (car (contents r))
                                                                          (cdr (contents r)))
                                                                       0 )))
-
+    (put 'raise '(rational) (lambda (rational)  (raise-to-real rational)))
     (display "Installed rational numbers...")
     (newline))

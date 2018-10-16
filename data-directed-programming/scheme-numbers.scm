@@ -2,6 +2,10 @@
     (define (tag contents)
         (attach-tag 'scheme-number contents))
 
+    (define (raise-to-rational number)
+        (make-rational-number number
+                               1))
+
     (put 'add '(scheme-number scheme-number) (lambda (a b) (tag (+ a b))))
     (put 'sub '(scheme-number scheme-number) (lambda (a b) (tag (- a b))))
     (put 'mul '(scheme-number scheme-number) (lambda (a b) (tag (* a b))))
@@ -11,5 +15,6 @@
                                                                            0)))
     (put-coercion 'rational 'scheme-number (lambda (rational-num) (tag (/ (car (contents rational-num))
                                                                           (cdr (contents rational-num))))))
+    (put 'raise '(scheme-number) (lambda(integer) (raise-to-rational integer)))
     (display "Installed scheme numbers...")
     (newline))
