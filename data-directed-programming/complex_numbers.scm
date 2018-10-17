@@ -4,7 +4,7 @@
 
     (define (make-from-mag-angle r A)
         ((get 'make-from-magnitude-angle 'polar ) r A))
-    
+
     (define (add-complex x1 x2)
         (make-from-real-imag (+ (real-part x1)
                                 (real-part x2))
@@ -63,6 +63,9 @@
 
     (put 'make-from-magnitude-angle 'complex
                                     (lambda (r A) (tag (make-from-mag-angle r A))))
+
+
+    (put 'raise '(complex) (lambda(c) '()))
 
     (display "Installed complex package...")
     (newline))
