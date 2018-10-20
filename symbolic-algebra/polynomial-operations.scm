@@ -5,24 +5,24 @@
 (define (install-polynomial-package)
 
     (define (tag contents) (attach-tag 'polynomial contents))
-    
+
     (define (same-variable? a b) (eq? a b))
 
     (define (make-polynomial variable terms) (cons variable terms))
-    
+
     (define (variable poly) (car poly))
-    
+
     (define (term-list poly) (cdr poly))
-        
+
     (define (empty-termlist) '())
-    
+
     (define (empty-termlist? term-list) (null? term-list))
-    
+
     (define (first-term term-list) (cons (car term-list)
                                          (- (length term-list) 1)))
-    
+
     (define (rest-terms term-list) (cdr term-list))
-    
+
     (define (empty-polynomial? poly) (null? (term-list poly)))
 
     (define (get-term-type term) (if (number? (car term)) 'dense 'sparse ))
@@ -30,11 +30,11 @@
     (define (coeff item) ((get 'coeff (get-term-type item)) item))
 
     (define (order item) ((get 'order (get-term-type item)) item))
-    
+
     (define (adjoin-term term term-list)
         ((get 'adjoin-term (get-term-type term)) term term-list))
 
-    (define (make-term order coefficient type length) (cons ((get 'make-term type) order coefficient) length)) 
+    (define (make-term order coefficient type length) (cons ((get 'make-term type) order coefficient) length))
 
 
     (define (add-polynomial p1 p2)
@@ -50,13 +50,19 @@
                              (sub-terms (term-list p1)
                                         (term-list p2)))
             (error "ERROR: polynomials should be of the same variable!")))
-    
+
 
     (define (mul-polynomial p1 p2)
         (if (same-variable? (variable p1) (variable p2))
             (make-polynomial (variable p1)
                              (mul-terms (term-list p1)
                                         (term-list p2)))
+            (error "ERROR: polynomials should be of the same variable!")))
+
+    (define (div-polynomial p1 p2)
+        (if (same-variable? (variable p1) (variable p2))
+            (let ((result (div-terms (term-list p1) (term-list p2))))
+                (list (make-polynomial (variable p1) (car result)) (make-polynomial (variable p1) (cadr result))))
             (error "ERROR: polynomials should be of the same variable!")))
 
 
@@ -69,9 +75,22 @@
                                                                       (add-terms (rest-terms l1) l2)))
                                ((< (order t1) (order t2)) (adjoin-term t2
                                                                       (add-terms l1 (rest-terms l2))))
-                               (else 
+                               (else
                                      (adjoin-term (make-term (order t1) (add (coeff t1) (coeff t2)) (get-term-type t1)  (order t1))
                                                   (add-terms (rest-terms l1) (rest-terms l2)))))))))
+
+    (define (div-terms l1 l2)
+        (if (empty-termlist? l1)
+            (list (empty-termlist) (empty-termlist))
+                  (let ((t1 (first-term l1)) (t2 (first-term l2)))
+                        (if (> (order t2) (order t1))
+                            (list (empty-termlist) l1)
+                            (let ((new-c (div (coeff t1) (coeff t2))) (new-o (sub (order t1) (order t2))))
+                                 (let ((quotient-term (cons (list new-o new-c) new-o)))
+                                       (let ((new-dividend (sub-terms l1 (mul-with-all-terms quotient-term l2))))
+                                            (let ((rest-of-results (list (cons (car quotient-term) (car (div-terms new-dividend l2)))
+                                                                         (cadr (div-terms new-dividend l2)))))
+                                                  rest-of-results))))))))
 
 
     (define (sub-terms l1 l2)
@@ -104,6 +123,8 @@
     (put 'add '(polynomial polynomial) (lambda (p1 p2) (tag (add-polynomial p1 p2))))
     (put 'mul '(polynomial polynomial) (lambda (p1 p2) (tag (mul-polynomial p1 p2))))
     (put 'sub '(polynomial polynomial) (lambda (p1 p2) (tag (sub-polynomial p1 p2))))
+    (put 'div '(polynomial polynomial) (lambda (p1 p2) (let ((result (div-polynomial p1 p2))) (list (tag (car result)) (tag (cadr result))))))
+
     (put 'zero? '(polynomial) empty-polynomial?)
     (display "Intalled polynomial package...")
     (newline)
@@ -144,3 +165,5 @@
 (define poly (make-poly 'x '((2 1) (1 2) (0 1))))
 (define nested (make-poly 'y (list '(2 1) (list 1 poly) '(0 2))))
 (define p (make-poly 'x '(4 3 2 1)))
+(define p1 (make-poly 'x '((5 1) (0 -1))))
+(define p2 (make-poly 'x '((2 1) (0 -1))))
