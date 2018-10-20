@@ -31,10 +31,6 @@
 
 (define (apply-generic op . args)
   (let ((type-tags (map get-tag args)))
-    (display op)
-    (newline)
-    (display type-tags)
-    (newline)
     (let ((proc (get op type-tags)))
       (if (not (null? proc))
           (apply proc (map contents args))
