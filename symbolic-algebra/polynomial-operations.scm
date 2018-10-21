@@ -2,6 +2,8 @@
 (load "utils.scm")
 (load "dense-termlist.scm")
 (load "sparse-termlist.scm")
+(load "rational-numbers.scm")
+
 (define (install-polynomial-package)
 
     (define (tag contents) (attach-tag 'polynomial contents))
@@ -145,6 +147,7 @@
 (install-polynomial-package)
 (install-dense-termlist)
 (install-sparse-termlist)
+(install-rational-numbers)
 
 
 (define (add z1 z2)
@@ -158,12 +161,22 @@
 
 (define (mul z1 z2)
     (apply-generic 'mul z1 z2))
-
+(define (numer r)
+    (apply-generic 'numer r))
+(define (denom r)
+    (apply-generic 'denom r))
 (define (make-poly var terms) ((get 'make 'polynomial) var terms))
+(define (make-rational x y) ((get 'make 'rational ) x y))
 (define (=zero? item) (apply-generic 'zero? item))
 
 (define poly (make-poly 'x '((2 1) (1 2) (0 1))))
 (define nested (make-poly 'y (list '(2 1) (list 1 poly) '(0 2))))
 (define p (make-poly 'x '(4 3 2 1)))
-(define p1 (make-poly 'x '((5 1) (0 -1))))
-(define p2 (make-poly 'x '((2 1) (0 -1))))
+(define p10 (make-poly 'x '((5 1) (0 -1))))
+(define p20 (make-poly 'x '((2 1) (0 -1))))
+(define p1 (make-poly 'x '((1 1) (0 1))))
+(define p2 (make-poly 'x '((3 1) (0 -1))))
+(define p3 (make-poly 'x '((1 1))))
+(define p4 (make-poly 'x '((2 1) (0 -1))))
+(define r1 (make-rational p1 p2))
+(define r2 (make-rational p3 p4))
