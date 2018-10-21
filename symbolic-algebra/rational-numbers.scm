@@ -27,7 +27,9 @@
               (mul (denom y)
                    (numer y))))
 
-(define (make-rat x y)(cons x y))
+(define (make-rat x y)
+    (let ((common (greatest-commom-divisor x y)))
+        (cons (div x common) (div y common))))
 
 (define (numer x)
       (car x))
@@ -43,11 +45,6 @@
       (display (denom x)))
 
 
-
-(define (gcd a b)
-      (if (= b 0)
-          a
-          (gcd b (remainder a b))))
 (define (tag contents) (attach-tag 'rational contents))
 (put 'add '(rational rational) (lambda (r1 r2)(tag (add-rat r1 r2))))
 (put 'sub '(rational rational) (lambda (r1 r2)(tag (sub-rat r1 r2))))

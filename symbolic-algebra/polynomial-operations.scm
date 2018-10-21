@@ -38,6 +38,8 @@
 
     (define (make-term order coefficient type length) (cons ((get 'make-term type) order coefficient) length))
 
+    (define (empty-poly? poly) (equal? (length poly) 1))
+
 
     (define (add-polynomial p1 p2)
         (if (same-variable?  (variable p1) (variable p2))
@@ -121,12 +123,22 @@
                                     (+ (order t1) (order (first-term l2))))
                          (mul-with-all-terms t1 (rest-terms l2)))))
 
+
+    (define (gcd-poly a b)
+      (if (empty-poly? b)
+          a
+          (gcd-poly b (remainder-poly a b))))
+
+    (define (remainder-poly a b)
+        (cadr (div-polynomial a b)))
+
+
     (put 'make 'polynomial (lambda (variable terms) (tag (make-polynomial variable terms))))
     (put 'add '(polynomial polynomial) (lambda (p1 p2) (tag (add-polynomial p1 p2))))
     (put 'mul '(polynomial polynomial) (lambda (p1 p2) (tag (mul-polynomial p1 p2))))
     (put 'sub '(polynomial polynomial) (lambda (p1 p2) (tag (sub-polynomial p1 p2))))
     (put 'div '(polynomial polynomial) (lambda (p1 p2) (let ((result (div-polynomial p1 p2))) (list (tag (car result)) (tag (cadr result))))))
-
+    (put 'gcd '(polynomial polynomial) (lambda (p1 p2) (tag (gcd-poly p1 p2))))
     (put 'zero? '(polynomial) empty-polynomial?)
     (display "Intalled polynomial package...")
     (newline)
@@ -139,6 +151,7 @@
     (put 'sub '(number number) -)
     (put 'div '(number number) /)
     (put 'zero? '(number) number-zero?)
+    (put 'gcd '(number number) gcd)
     (display "Intalled scheme numbers package...")
     (newline)
 )
@@ -159,8 +172,12 @@
 (define (sub z1 z2)
     (apply-generic 'sub z1 z2))
 
+(define (greatest-commom-divisor a b)
+    (apply-generic 'gcd a b))
+
 (define (mul z1 z2)
     (apply-generic 'mul z1 z2))
+
 (define (numer r)
     (apply-generic 'numer r))
 (define (denom r)
