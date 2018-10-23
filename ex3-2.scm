@@ -1,0 +1,7 @@
+(define (make-monitered func)
+    (define count 0)
+    (lambda (input)
+        (cond ((eq? input 'how-many-calls? ) count)
+              ((eq? input 'reset-count ) (set! count 0))
+              (else (begin (set! count (+ count 1))
+                           (func input))))))
