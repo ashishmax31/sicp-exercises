@@ -2,35 +2,16 @@
     ; Internal state
     (define table (cons 'table '()))
 
-    (define e-table (cons 'table
-                          (cons (cons 'a 
-                                      (cons 'b
-                                            (cons (cons 'k1 5)
-                                                  '())))
-                                '())))
-
     (define (lookup . keys)
         (if (null? keys)
             (error "Expected atlease one key!")
             (cdr (look-up-helper keys table))))
 
-    (define (lookup-new . keys)
-        (if (null? keys)
-            (error "Expected atlease one key!")
-            (cdr (look-up-helper keys e-table))))    
-
-
     (define (last-key? keys)
         (null? (cdr keys)))
 
     (define (subtable? record)
-        (not (pair? (car (cdr record)))))
-
-    (define (key-present-in-subtable? key contents)
-        (cond ((null? contents) #f)
-              ((pair? (car contents)) (if (assoc key contents) #t #f))
-              ((same-key? key (car contents)) #t)
-              (else key-present-in-subtable? key (cdr contents))))
+        (and (list? (cdr record)) (not (pair? (car (cdr record))))))
 
     (define (look-up-helper keys current-table)
         (let ((result (assoc (car keys) (cdr current-table))))
@@ -44,29 +25,27 @@
               ((same-key? (car keys) (car res)) (subtable-lookup (cdr keys) (cdr res)))
               (else (cons #f #f))))
 
+    (define (last-subtable? keys)
+        (equal? (length keys) 2))
+
+    (define (find-last-subtable keys records)
+        (if (last-subtable? keys)
+            (cons (cdr keys) records)
+            (find-last-subtable (cdr keys) (cdr records))))
 
     (define (last-subtable-key-pair-for-insert keys current-table)
         (let ((record (assoc (car keys) (cdr current-table))))
-                (if record
-                    (last-subtable-key-pair-for-insert (cdr keys) record)
-                    (cons keys current-table))))
-
+                (cond ((equal? record #f) (cons keys current-table))
+                      ((subtable? record) (find-last-subtable (cdr keys) (cdr record))))))
 
     (define (assoc key records)
         (cond ((null? records) #f)
               ((same-key? key (caar records)) (car records))
               (else (assoc key (cdr records)))))
 
-
-    (define (select-subtable key records)
-        (cond ((null? records) #f)
-              ((same-key? key (car records)) (cdr records))
-              (else (select-subtable key (cdr records)))))
-    
     (define (insert value . keys)
         (let ((resp (look-up-helper keys table)))
-             (display resp)
-             (if (car resp)
+             (if (and resp (car resp))
                  (set-cdr! resp value)
                  (insert-helper value keys table))))
 
@@ -75,7 +54,7 @@
              (let ((concerned-table (cdr concerned-key-table-pair))
                    (concerned-keys (car concerned-key-table-pair)))
                    (set-cdr! concerned-table
-                              (cons (if (> (length keys) 1) (generate-nested-cons-structure concerned-keys value) (cons (car keys) value))
+                              (cons (if (> (length concerned-keys) 1) (generate-nested-cons-structure concerned-keys value) (cons (car concerned-keys) value))
                                     (cdr concerned-table))))))
 
 
@@ -98,7 +77,7 @@
 (define table-ops (make-table equal?))
 (define insert (table-ops 'insert ))
 (define lookup (table-ops 'lookup ))
-(define new-l (table-ops 'test))
+(define new-l (table-ops 'test ))
 
 (define (show message)
     (display message))
@@ -109,5 +88,13 @@
         (begin (show context) (error "Expectation failed"))))
 
 
-; Tests
+(insert 100 'a 'b 'c 'k1)
+(assert (equal? 100 (lookup 'a 'b 'c 'k1 )) "insert 4 keys")
+(insert 200 'a 'b 'c 'k1)
+(assert (equal? 200 (lookup 'a 'b 'c 'k1 )) "insert 4 keys")
+(insert 1 'x)
+(assert (equal? 1 (lookup 'x)) "insert 1 key")
+(insert 2 'x)
+(assert (equal? 2 (lookup 'x)) "insert 1 key")
+
 
