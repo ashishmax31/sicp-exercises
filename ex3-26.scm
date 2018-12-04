@@ -2,7 +2,7 @@
     (cond ((null? items) #t)
         ((equal? (car items) #t) (all? (cdr items)))
         ((equal? (car items) #f) #f)
-        (else (error "all? expects applies only on #t or #f!"))))
+        (else (error "all? applies only on #t or #f!"))))
 
 (define (make-table custom-compare-func)
     (define table (list '() '() '()))
@@ -74,12 +74,13 @@
 
 (define (compare-symbols a b)
     (define (validate-and-convert . inputs)
-        (if (all? (map symbol? inputs))
-            (map symbol->string inputs)
-            (error "Type mismatch! Expected all types to be symbols")))
+        (cond ((all? (map symbol? inputs)) (map symbol->string inputs))
+              ((all? (map number? inputs)) inputs)
+              (else (error "Type mismatch! Expected all types to be symbols"))))
 
     (define (compare a b)
-        (string<=? a b))
+        (cond ((number? a) (<= a b))
+              ((symbol? a) (string<=? a b))))
 
     (apply compare (validate-and-convert a b)))
 
