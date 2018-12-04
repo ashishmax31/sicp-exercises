@@ -2,7 +2,7 @@
     (cond ((null? items) #t)
         ((equal? (car items) #t) (all? (cdr items)))
         ((equal? (car items) #f) #f)
-        (else (error "all? expects applies only on #t or #f!"))))
+        (else (error "all? applies only on #t or #f!"))))
 
 (define (make-table custom-compare-func)
     (define table (list '() '() '()))
