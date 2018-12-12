@@ -10,9 +10,9 @@
                        'done))
 
         (define (add-action-procedure! procedure)
-            (begin (set-cdr! action-procedures
-                             (cons procedure
-                                   (cdr action-procedures)))
+            (begin (set! action-procedures
+                         (cons procedure
+                               action-procedures))
                    (procedure)))
                    
         (define (dispatch message)

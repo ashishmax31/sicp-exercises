@@ -63,18 +63,32 @@
          (or-gate a3 a2 c-out)))
 
 (define (ripple-carry-adder a-lines b-lines sum-lines carry)
-    (define initial-carry (make-wire))
-    (set-signal! initial-carry 0)
     (if (equal? (length a-lines) (length b-lines))
-        (ripple-carry-adder-helper (reverse a-lines) (reverse b-lines) carry (reverse sum-lines) initial-carry)
+        (ripple-carry-adder-helper (reverse a-lines)
+                                   (reverse b-lines) 
+                                   carry 
+                                   (reverse sum-lines) 
+                                   (make-wire))
         (error "Expected same number of inputs in both the input lines!")))
 
 (define (ripple-carry-adder-helper a-lines b-lines carry-out sum-lines previous-carry)
     (if (last-bit? a-lines)
-        (full-adder (car a-lines) (car b-lines) previous-carry (car sum-lines) carry-out)
+        (full-adder (car a-lines)
+                    (car b-lines)
+                    previous-carry
+                    (car sum-lines)
+                    carry-out )
         (let ((carry-for-the-next-adder (make-wire)))
-             (full-adder (car a-lines) (car b-lines) previous-carry (car sum-lines) carry-for-the-next-adder)
-             (ripple-carry-adder-helper (cdr a-lines) (cdr b-lines) carry-out (cdr sum-lines) carry-for-the-next-adder))))
+             (full-adder (car a-lines) 
+                         (car b-lines) 
+                         previous-carry 
+                         (car sum-lines) 
+                         carry-for-the-next-adder)
+             (ripple-carry-adder-helper (cdr a-lines) 
+                                        (cdr b-lines) 
+                                        carry-out 
+                                        (cdr sum-lines)
+                                        carry-for-the-next-adder))))
 
 
 (define (last-bit? line)

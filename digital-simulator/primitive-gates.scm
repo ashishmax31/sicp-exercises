@@ -22,7 +22,7 @@
 
 (define (not-gate input output)
     (define (invert-input)
-        (let ((new-output (logical-not input)))
+        (let ((new-output (logical-not (get-signal input))))
              (after-delay not-gate-delay
                           (lambda () (set-signal! output new-output)))))
     (add-action! input invert-input))
