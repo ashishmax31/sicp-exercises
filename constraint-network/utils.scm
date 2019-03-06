@@ -10,7 +10,7 @@
 (define (has-value? connector)
     (connector 'has-value? ))
 
-(define (get-value? connector)
+(define (get-value connector)
     (connector 'get-value ))
 
 (define (connect connector new-constraint)
@@ -34,3 +34,8 @@
               (else  (error "Unknown request!"))))
               
     (connect connector me))
+
+(define (for-each-except except procedure items)
+    (cond ((null? items) 'done )
+          ((eq? except (car items)) (for-each-except except procedure (cdr items)))
+          (else (begin (procedure (car items)) (for-each-except except procedure (cdr items))))))

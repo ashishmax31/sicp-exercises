@@ -8,9 +8,10 @@
                    (set! value newval)
                    (set! informant setter)
                    (for-each-except setter
-                                    inform-about-value
+                                    inform-about-new-value
                                     constraints))
-                  ((not (equal? newval value))(error "Contradiction! Old value present!"))))
+                   ((not (equal? newval value)) (error "Contradiction! Old value present!"))
+                   (else  'ignored )))
         
         (define (forget-value! retractor)
             (if (eq? retractor informant)
@@ -27,7 +28,8 @@
                 (set! constraints (cons new-constraint constraints))
                 'ignored )
             (if (has-value? me)
-                (inform-about-value constraints)))
+                (inform-about-new-value constraints)
+                'ignored ))
 
         (define (me request)
             (cond ((eq? request 'has-value? ) (if informant #t #f))

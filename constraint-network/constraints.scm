@@ -12,13 +12,12 @@
 
     (define (me request)
         (cond ((eq? request 'new-value-present ) (process-new-value))
-              ((eq? request 'forget-value ) (forget-value))
+              ((eq? request 'inform-about-no-value ) (forget-value))
               (else (error "Unknown operation!"))))
               
     (connect a1 me)
     (connect a2 me)
-    (connect sum me)
-    me)
+    (connect sum me))
 
 (define (multiplier a1 a2 product)
     (define (process-new-value)
@@ -39,19 +38,15 @@
               
     (connect a1 me)
     (connect a2 me)
-    (connect product me)
-    me)
+    (connect product me))
 
 
 (define (constant value connector)
-    
     (define (me request)
         (error "Unknown operation!"))
-        
-    (set-value! connector value me)
 
     (connect connector me)
-    me)
+    (set-value! connector value me))
 
 
 (define (inform-about-new-value constraint)
