@@ -28,7 +28,7 @@
                 (set! constraints (cons new-constraint constraints))
                 'ignored )
             (if (has-value? me)
-                (inform-about-new-value constraints)
+                (inform-about-new-value new-constraint)
                 'ignored ))
 
         (define (me request)
