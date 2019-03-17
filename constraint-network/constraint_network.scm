@@ -5,23 +5,32 @@
 (load "./constraints.scm")
 (load "./utils.scm")
 
+(define (c+ a b)
+    (define z (make-connector))
+    (adder a b z)
+    z)
+
+(define (c* a b)
+    (define z (make-connector))
+    (multiplier a b z)
+    z)
+
+(define (c/ a b)
+    (define z (make-connector))
+    (divide a b z)
+    z)
+
+(define (cv val)
+    (define z (make-connector))
+    (constant val z)
+    z)
+
+(define (celsius-fahrenheit-coverter x)
+    (c+ (c* x
+            (c/ (cv 9) (cv 5)))
+        (cv 32)))
+
 (define C (make-connector))
-(define F (make-connector))
-
-(define (celsius-fahrenheit-converter c f)
-    (let ((w (make-connector))
-          (u (make-connector))
-          (v (make-connector))
-          (x (make-connector))
-          (y (make-connector)))
-          (multiplier c w u)
-          (multiplier v x u)
-          (adder v y f)
-          (constant 9 w)
-          (constant 5 x)
-          (constant 32 y)
-          'ok ))
-
-(celsius-fahrenheit-converter C F)
-(probe "celsius" C)
-(probe "Fahrenheit" F)
+(define F (celsius-fahrenheit-coverter C))
+(probe "c:" C)
+(probe "f:" C)
