@@ -15,9 +15,10 @@
 
 (define (memoised-proc proc)
     (let ((result #f)
-          (already-run? #f))
-         (lambda () 
-            (if already-run?
+          (already-run #f))
+         (define (return-proc)
+            (if already-run
                 result
-                (begin (set! result (proc)) (set! already-run? #t) result)))))
+                (begin (set! result (proc)) (set! already-run #t) result)))
+         return-proc))
 
