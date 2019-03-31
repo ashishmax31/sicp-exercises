@@ -1,11 +1,10 @@
-(define (delay exp)
-    (memoised-proc (lambda () (exp))))
 
 (define (force exp)
     (exp))
 
-(define (cons-stream a b)
-    (cons a (delay b)))
+(define-syntax cons-stream
+  (syntax-rules ()
+    ((_ a b) (cons a (delay b)))))
 
 (define (stream-car stream)
     (car stream))

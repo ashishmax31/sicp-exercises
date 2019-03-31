@@ -37,3 +37,22 @@
     (if (= n 0)
         (stream-car stream)
         (stream-ref (stream-cdr stream) (- n 1))))
+
+(define (stream-filter proc stream)
+    (cond ((stream-null? stream) the-empty-stream)
+          ((proc (stream-car stream))
+           (cons-stream (stream-car stream)
+                        (stream-filter proc (stream-cdr stream))))
+          (else (stream-filter proc (stream-cdr stream)))))
+
+(define sum 0)
+
+(define (accum x)
+    (set! sum (+ x sum))
+    sum)
+
+(define seq (stream-map accum (enumerate-interval 1 20)))
+(define y (stream-filter even? seq))
+(define z (stream-filter (lambda (x) (= (remainder x 5) 0)) seq))
+
+(stream-ref y 7)
