@@ -78,3 +78,6 @@
         the-empty-stream
         (cons-stream (* value (stream-car stream))
                      (scale-stream value (stream-cdr stream)))))
+
+(define (add-streams a b)
+  (s-map + a b))
