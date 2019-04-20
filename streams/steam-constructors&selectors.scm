@@ -45,3 +45,36 @@
         the-empty-stream
         (cons-stream a
                      (enumerate-interval (+ a 1) b))))
+
+(define (s-map proc . arg-streams)
+    (if (stream-null? (car arg-streams))
+        the-empty-stream
+        (cons-stream  (apply proc (map stream-car arg-streams))
+                      (apply s-map
+                             (cons proc
+                                   (map stream-cdr arg-streams))))))
+
+(define (s-ref stream n)
+    (if (= n 0)
+        (stream-car stream)
+        (s-ref (stream-cdr stream) (- n 1))))
+
+(define (stream-filter proc stream)
+    (cond ((stream-null? stream) the-empty-stream)
+          ((proc (stream-car stream))
+           (cons-stream (stream-car stream)
+                        (stream-filter proc (stream-cdr stream))))
+          (else (stream-filter proc (stream-cdr stream)))))
+
+
+(define (stream-starting-from n)
+    (cons-stream n
+                 (stream-starting-from (+ n 1))))
+
+(define integers (stream-starting-from 1))
+
+(define (scale-stream value stream)
+    (if (stream-null? stream)
+        the-empty-stream
+        (cons-stream (* value (stream-car stream))
+                     (scale-stream value (stream-cdr stream)))))
