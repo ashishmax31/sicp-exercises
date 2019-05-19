@@ -1,3 +1,8 @@
+; TO DO:
+; How to implement begin for single expression with multiple sub expression, example: (assoc (quoted b)
+;                                                                                            (quoted ((a 1) (b 1))))
+; The above expression is a single expression. Begin shouldn't split them up.
+
 (define (tagged-list? exp type) (and (pair? exp) (eq? (car exp) type)))
 (define (first exps) (car exps))
 (define (rest exps) (cdr exps))
@@ -55,6 +60,9 @@
 (define (operator exp) (car exp))
 (define (operands exp) (cdr exp))
 
+; Quoted
+(define (text-quoted exp)
+    (cadr exp))
 
 
 
@@ -69,7 +77,7 @@
           ((cond-expression? exp) (eval (cond->if (cond-expressions exp)) env))
           ((lambda? exp) (make-procedure (lambda-parameters exp) (lambda-body exp) env))
           ((application? exp) (apply-e (eval (operator exp) env)
-                                     (list-of-values (operands exp) env)))
+                                       (list-of-values (operands exp) env)))
           (else (error "Unknown expression"))))
 
 (define (look-up-variable-in-env name env)
@@ -85,8 +93,7 @@
                     env))
     (display env))
 
-(define (text-quoted exp)
-    (cadr exp))
+
 
 (define (eval-assignment exp env)
     (assignment-in-env  (assignment-variable exp)
@@ -113,8 +120,10 @@
 
 
 (define (make-begin-sequence exps)
-    (cons 'begin
-          (expand-begin-sequence exps)))
+    (if (> (length exps) 1)  
+        (cons 'begin
+              (expand-begin-sequence exps))
+        (first exps)))
 
 (define (expand-begin-sequence exps)
     (if (null? exps)
@@ -173,12 +182,16 @@
                   (list '+ +)
                   (list 'true #t)
                   (list 'false #f)
-                  (list '= =)))
+                  (list '= =)
+                  (list 'car car)
+                  (list 'assoc assoc)
+                  (list 'cadr cadr)))
 
 (define (run env)
     (lambda (command) (eval command env)))
 
 (define runner (run env))
+
 
 
 

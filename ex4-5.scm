@@ -1,36 +1,24 @@
-#lang scheme
 
-;Normal implementation
-(define (eval exp env)
-	(cond ((self-evaluating? exp) exp)
-		  ((quoted? exp) (text-quoted exp))
-		  ((variable? exp) (look-up-variable-in-env exp env))
-		  ((assignment? exp) (eval-assignment exp env))
-		  ((if-expression? exp) (eval-if-assignment exp env))
-		  ((begin-sequence? exp) (eval-sequence (begin-expressions exp) env))
-		  ((cond-expression? exp) (eval (cond->if exp) env))
-		  ((lambda? exp) (make-procedure (lambda-parameters exp) (lambda-body exp) env))
-		  ((and-expression? exp) (eval-and-sequence (and-expressions exp) env))
-		  ((or-expression? exp) (eval-or-sequence (or-expressions exp) env))
-		  ((application? exp) (apply (eval (operator exp) env)
-		  							 (list-of-values (operands exp) env)))
-		  (else (error "Unknown expression"))))
+(load "./metacircular-evaluator/evaluator.scm")
 
 
-
-(define (make-begin-sequence exps)
-	(cons 'begin
-		  (expand-begin-sequence exps)))
-
-(define (expand-begin-sequence exps)
-	(if (null? exps)
-		'()
-		(cons (car exps)
-		   	  (expand-begin-sequence (cdr exps)))))
 
 (define (cond->if exps)
-	(if (and (last-exp? exps) (eq? (caar exp) 'else))
-		(make-begin-sequence (cadr exps))
-		(make-if (cond-predicate (car exps))
-				 ((make-begin-sequence (cond-actions)) (cond-predicate (car exps)))
-				 (cond->if (cdr exps)))))
+    (if (and (last-exp? exps) (eq? (caar exps) 'else))
+        (make-begin-sequence (cdar exps))
+        (make-if (cond-predicate (first exps))
+                 (if-alt-builder (make-begin-sequence (cond-actions (first exps)))
+                                 (cond-predicate (first exps))
+                                 '())
+                 (cond->if (rest exps)))))
+
+
+(define (if-alt-builder proc args res)
+  	(list proc args))
+
+
+(runner '(cond ((assoc (quoted b)
+                       (quoted ((a 1) (b 2)))) cadr)
+               (else (+ x 10))))
+
+;'(((assoc (quoted b) (quoted ((a 1) (b 1)))) car) (else (+ x 10)))
