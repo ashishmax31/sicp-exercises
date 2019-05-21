@@ -1,3 +1,4 @@
+#lang scheme
 ; TO DO:
 ; How to implement begin for single expression with multiple sub expression, example: (assoc (quoted b)
 ;                                                                                            (quoted ((a 1) (b 1))))
@@ -17,6 +18,7 @@
 (define (if-expression? exp) (tagged-list? exp 'if))
 (define (begin-sequence? exp) (tagged-list? exp 'begin))
 (define (cond-expression? exp) (tagged-list? exp 'cond))
+(define (let-expression? exp) (tagged-list? exp 'let))
 (define (lambda? exp) (tagged-list? exp 'lambda))
 (define (application? exp) (pair? exp))
 (define (procedure-definition? exp) (pair? (cadr exp)))
@@ -50,6 +52,19 @@
 (define (cond-predicate cond-exp) (car cond-exp))
 (define (cond-actions cond-exp) (cdr cond-exp))
 
+
+
+; Let expressions
+(define (let-expressions exps) (cdr exps))
+(define (let-parameters exps)
+  (map car
+       (first exps)))
+
+(define (let-body exps) (cdr exps))
+(define (let-values exps)
+  (map cadr
+       (first exps)))
+
 ; Lambda expressions
 
 (define (lambda-parameters exp) (cadr exp))
@@ -75,6 +90,7 @@
           ((if-expression? exp) (eval-if-statement exp env))
           ((begin-sequence? exp) (eval-sequence (begin-expressions exp) env))
           ((cond-expression? exp) (eval (cond->if (cond-expressions exp)) env))
+          ((let-expression? exp) (eval (let->combination (let-expressions exp) env) env))
           ((lambda? exp) (make-procedure (lambda-parameters exp) (lambda-body exp) env))
           ((application? exp) (apply-e (eval (operator exp) env)
                                        (list-of-values (operands exp) env)))
@@ -140,6 +156,13 @@
         (make-if (cond-predicate (first exps))
                  (make-begin-sequence (cond-actions (first exps)))
                  (cond->if (rest exps)))))
+
+(define (let->combination let-exps env)
+    (cons (make-lambda (let-parameters let-exps)
+                       (let-body let-exps)
+                       env)
+          (list-of-values (let-values let-exps)
+                          env)))
 
 (define (eval-sequence exps env)
     (cond ((null? exps) '())
