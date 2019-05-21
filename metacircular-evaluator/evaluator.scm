@@ -91,6 +91,8 @@
           ((begin-sequence? exp) (eval-sequence (begin-expressions exp) env))
           ((cond-expression? exp) (eval (cond->if (cond-expressions exp)) env))
           ((let-expression? exp) (eval (let->combination (let-expressions exp) env) env))
+          ((let*-expression? exp) (eval (let*->nested-let (let*-variable-value-list (let*-expressions exp))
+                                                          (let*-body (let*-expressions exp)))))
           ((lambda? exp) (make-procedure (lambda-parameters exp) (lambda-body exp) env))
           ((application? exp) (apply-e (eval (operator exp) env)
                                        (list-of-values (operands exp) env)))
@@ -198,8 +200,32 @@
 (define (make-procedure parameters body)
     '())
 
+(define (let*-expression? expression) (tagged-list? 'let*))
+
+(define (let*-expressions expression) (cdr expression))
+
+(define (let*-variable-value-list let*-expressions)
+  (first let*-expressions))
+
+(define (let*-body let*-expressions)
+  (cdr let*-expressions))
+
+(define (make-let-expression let-variable-value-list body)
+    (list 'let let-variable-value-list body))
+
+;((x 3)
+ ;(y (+ x 2))
+ ;(z (+ x y)))
+(define (let*->nested-let variable-value-exps body)
+    (if (last-exp? variable-value-exps)
+        (cons 'let
+              (cons (list (first variable-value-exps))
+                    body))
+        (make-let-expression (list (first variable-value-exps))
+                             (let*->nested-let (rest variable-value-exps) body))))
 
 
+(define x '(((x 3) (y (+ x 2)) (z (+ x y))) (+ x y z)))
 
 (define env (list (list 'x 10)
                   (list '+ +)
@@ -214,7 +240,10 @@
     (lambda (command) (eval command env)))
 
 (define runner (run env))
-
+(let ((x 3))
+  (let ((y (+ x 2)))
+    (let ((z (+ x y)))
+      (+ x y z))))
 
 
 
