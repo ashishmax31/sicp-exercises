@@ -195,7 +195,7 @@
 ;                               (procedure-env procedure))))
 
 (define (make-lambda parameters body env)
-    (cons 'lambda (cons parameters body)))
+    (list 'lambda  parameters body))
 
 (define (make-procedure parameters body)
     '())
