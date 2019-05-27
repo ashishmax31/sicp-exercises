@@ -1,4 +1,6 @@
-#lang scheme
+;#lang scheme
+
+(load "environment.scm")
 ; TO DO:
 ; How to implement begin for single expression with multiple sub expression, example: (assoc (quoted b)
 ;                                                                                            (quoted ((a 1) (b 1))))
@@ -11,7 +13,7 @@
 
 
 (define (self-evaluating? exp) (cond ((number? exp) #t) ((string? exp) #t) (else #f)))
-(define (quoted? exp) (tagged-list? exp 'quoted))
+(define (quoted? exp) (tagged-list? exp 'quote))
 (define (variable? exp) (symbol? exp))
 (define (assignment? exp) (tagged-list? exp 'set!))
 (define (definition? exp) (tagged-list? exp 'define))
@@ -23,13 +25,18 @@
 (define (application? exp) (pair? exp))
 (define (procedure-definition? exp) (pair? (cadr exp)))
 (define (last-exp? exp) (null? (cdr exp)))
+(define (primitive-procedure? procedure)
+  (tagged-list? procedure 'primitive))
+
+(define (compound-procedure? procedure)
+  (tagged-list? procedure 'procedure))
 
 
 ;Variables
 (define (variable-name exp) (car exp))
 
 ; Assignments and definitions
-'(define (test xy) (asdsd) (dsadsa))
+;'(define (test xy) (asdsd) (dsadsa))
 
 
 (define (assignment-variable exp) (cadr exp))
@@ -79,12 +86,28 @@
 (define (text-quoted exp)
     (cadr exp))
 
+; Compound procedures
+
+(define (procedure-parameters procedure)
+  (cadr procedure))
+
+(define (procedure-body procedure)
+  (caddr procedure))
+
+(define (procedure-env procedure)
+  (cadddr procedure))
+
+; Primitive procedures
+
+(define (procedure-object primitive-procedure)
+  (cadr primitive-procedure))
+
 
 
 (define (eval exp env)
     (cond ((self-evaluating? exp) exp)
           ((quoted? exp) (text-quoted exp))
-          ((variable? exp) (look-up-variable-in-env exp env))
+          ((variable? exp) (lookup-variable-value exp env))
           ((assignment? exp) (eval-assignment exp env))
           ((definition? exp) (eval-definition exp env))
           ((if-expression? exp) (eval-if-statement exp env))
@@ -98,38 +121,26 @@
                                        (list-of-values (operands exp) env)))
           (else (error "Unknown expression"))))
 
-(define (look-up-variable-in-env name env)
-    (cond ((null? env) (display "Unbound variable ") (display name) (newline)(error "exiting"))
-          ((eq? (caar env) name) (cadr (car env)))
-          (else (look-up-variable-in-env name (rest env)))))
-
-(define (assignment-in-env name value env)
-    (display "jere")
-    (display name)
-    (display value)
-    (set! env (cons (list name value)
-                    env))
-    (display env))
-
 
 
 (define (eval-assignment exp env)
-    (assignment-in-env  (assignment-variable exp)
-                        (eval (assignment-body exp) env)
-                        env))
+    (set-variable-value! (assignment-variable exp)
+                         (eval (assignment-body exp) env)
+                         env))
 
 (define (eval-definition exp env)
     (if (procedure-definition? exp)
         (eval-procedure-definition exp env)
-        (assignment-in-env (assignment-variable exp)
-                           (eval (assignment-body exp) env)
-                           env)))
+        (define-variable! (assignment-variable exp)
+                          (eval (assignment-body exp) env)
+                          env))
+    'ok)
 
 (define (eval-procedure-definition exp env)
-    (assignment-in-env (definition-name exp)
-                       (make-lambda (definition-parameters exp)
-                                    (definition-body exp)
-                                    env)
+    (define-variable! (definition-name exp)
+                      (eval (make-lambda (definition-parameters exp)
+                                         (definition-body exp))
+                            env)
                        env))
 
 (define (eval-if-statement exp env)
@@ -178,29 +189,14 @@
               (list-of-values (rest operands)
                               env))))
 
-(define (primitive-procedure? procedure)
-    #t)
+; Difference 1 
+(define (make-lambda parameters body)
+    (cons 'lambda  (cons parameters body)))
 
-;(define (apply-primitive-procedure))
+(define (make-procedure parameters body env)
+    (list 'procedure parameters body env))
 
-(define (apply-e procedure arguments)
-    (if (primitive-procedure? procedure)
-        (apply procedure arguments)
-        (apply procedure arguments)))
-
-;(define (apply-compound-procedure procedure arguments)
-;    (eval-sequence (procedure-body procedure)
-;                   (extend-env (procedure-arguments procedure)
-;                               arguments
-;                               (procedure-env procedure))))
-
-(define (make-lambda parameters body env)
-    (list 'lambda  parameters body))
-
-(define (make-procedure parameters body)
-    '())
-
-(define (let*-expression? expression) (tagged-list? 'let*))
+(define (let*-expression? expression) (tagged-list? expression 'let*))
 
 (define (let*-expressions expression) (cdr expression))
 
@@ -225,25 +221,90 @@
                              (let*->nested-let (rest variable-value-exps) body))))
 
 
-(define x '(((x 3) (y (+ x 2)) (z (+ x y))) (+ x y z)))
+(define (apply-primitive-procedure procedure arguments)
+  (call-underlying-scheme-apply (procedure-object procedure)
+                                arguments))
 
-(define env (list (list 'x 10)
+(define (apply-e procedure arguments)
+    (if (primitive-procedure? procedure)
+        (apply-primitive-procedure procedure arguments)
+        (apply-compound-procedure procedure arguments)))
+
+(define (apply-compound-procedure procedure arguments)
+    (eval-sequence (procedure-body procedure)
+                   (extend-environment (procedure-parameters procedure)
+                                       arguments
+                                       (procedure-env procedure))))
+
+(define call-underlying-scheme-apply apply)
+
+(define (primitive-procedure-names)
+  (map car
+       primitive-procedures))
+
+(define (primitive-procedures-objects)
+  (map (lambda (proc) (list 'primitive (cadr proc)))
+       primitive-procedures))
+
+
+(define primitive-procedures 
+            (list 
                   (list '+ +)
                   (list 'true #t)
                   (list 'false #f)
                   (list '= =)
                   (list 'car car)
                   (list 'assoc assoc)
-                  (list 'cadr cadr)))
+                  (list 'cadr cadr)
+                  (list 'display display)
+                  (list 'newline newline)
+                  (list 'cons cons)
+                  (list 'cdr cdr)
+                  (list 'null? null?)
+                  (list '< <)
+                  (list '- -)
+                  (list '* *)
+                  (list '/ /)))
 
-(define (run env)
-    (lambda (command) (eval command env)))
+(define (setup-environment)
+  (let ((initial-env (extend-environment (primitive-procedure-names)
+                                         (primitive-procedures-objects)
+                                         the-empty-environment)))
+    initial-env))
 
-(define runner (run env))
-(let ((x 3))
-  (let ((y (+ x 2)))
-    (let ((z (+ x y)))
-      (+ x y z))))
+(define the-global-env (setup-environment))
+(define input-prompt "M-eval input:  ")
+(define output-prompt "M-eval output: ")
+
+(define (driver-loop)
+  (prompt-for-input input-prompt)
+  (let ((input (read)))
+    (let ((output (eval input the-global-env)))
+      (announce-output output-prompt)
+      (user-print output)))
+  (driver-loop))
+
+
+(define (prompt-for-input string)
+  (newline)
+  (display string)
+  (newline))
+
+;; Output
+
+(define (announce-output string)
+  (newline)
+  (display string)
+  (newline))
+
+(define (user-print obj)
+  (if (compound-procedure? obj)
+      (display (list 'compound-procedure
+         (procedure-parameters obj)
+         (procedure-body obj)))
+      (display obj)))
+
+
 
 
 
