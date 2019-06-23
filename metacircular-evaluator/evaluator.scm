@@ -172,8 +172,7 @@
 
 (define (let->combination let-exps env)
     (cons (make-lambda (let-parameters let-exps)
-                       (let-body let-exps)
-                       env)
+                       (let-body let-exps))
           (list-of-values (let-values let-exps)
                           env)))
 
