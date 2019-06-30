@@ -154,6 +154,7 @@
         ((if-expression? exp) (analyze-if exp))
         ((begin-sequence? exp) (analyze-sequence (begin-expressions exp)))
         ((cond-expression? exp) (analyze-if (cond->if (cond-expressions exp))))
+        ((let-expression? exp) (analyze-let-exp (let-expressions exp)))
         ((lambda? exp) (analyze-lambda exp))
         ((application? exp) (analyze-application exp))
         (else (error "Unknown expression"))))
@@ -204,6 +205,16 @@
                       (c-proc env)
                       (a-proc env)))))
 
+(define (analyze-let-exp expression)
+  (let ((variables (let-parameters expression))
+        (let-values-proc (map analyze (let-values expression)))
+        (let-body-proc (analyze-sequence (let-body expression))))
+    (lambda (env)
+      (let-body-proc (extend-environment variables
+                                         (map (lambda (proc) (proc env))
+                                              let-values-proc)
+                                         env)))))
+
 
 (define (analyze-lambda expression)
   (let ((parameters (lambda-parameters expression))
@@ -218,7 +229,7 @@
                                                    args
                                                    (procedure-env proc)))
         (apply-primitive-procedure proc args)))
-  
+
   (let ((operator-proc (analyze (operator expression)))
         (operands-proc (map analyze (operands expression))))
     (lambda (env) (execute-application (operator-proc env)
@@ -236,14 +247,14 @@
         first-proc
         (loop (sequentially first-proc (car rest-proc))
               (cdr rest-proc))))
-  
+
   (let ((procs (map analyze exps)))
     (loop (car procs)
           (cdr procs))))
 
 
 (define (make-begin-sequence exps)
-    (if (> (length exps) 1)  
+    (if (> (length exps) 1)
         (cons 'begin
               (expand-begin-sequence exps))
         (first exps)))
@@ -373,12 +384,4 @@
          (procedure-parameters obj)
          (procedure-body obj)))
       (display obj)))
-
-
-
-
-
-
-
-
 
